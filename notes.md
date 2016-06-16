@@ -115,3 +115,5 @@ Show **OS information**
 ```
 Servertokens OS
 ```
+
+## Nginx
