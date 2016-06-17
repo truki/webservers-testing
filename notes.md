@@ -117,3 +117,108 @@ Servertokens OS
 ```
 
 ## Nginx
+
+### Checks nginx is up and running
+
+Check the service navigating to url
+
+``` http://localhost ```
+
+Checking:
+
+``` service nginx status ```
+
+### Check version
+
+``` nginx -v (-V with more details) ```
+
+or
+
+``` apt-cache show nginx ```
+
+### Recomendation
+
+Add ppa official repositories to download the newer version.
+```
+sudo -s
+nginx=stable # use nginx=development for latest development version
+add-apt-repository ppa:nginx/$nginx
+apt-get update
+apt-get install nginx
+```
+
+### Configuration
+
+Based on context {}, where is possible to inherit
+Differents contexts, main (without curlybrackets), http, server, location...
+All directive that define for example in http context
+
+Possibles problems with directive:
+
+* Directive used in error context.
+* olders directives used in new releases.
+
+# FastCGI
+
+Evolution of CGI, is a protocol where you are making a proxy of differents request's types (PHP, ...)
+Inconvenient --> overload
+
+# PHP with Apache
+
+we have two options if we choose FastCGI:
+* PHP-FPM:
+We need to modify provision Vagrant file with:
+
+```
+sudo add-apt-repository -y ppa:ondrej/apache2
+sudo add-apt-repository -y ppa:ondrej/php5-5.6
+sudo apt-get install -y apache2
+sudo apt-get install -y php5-fpm \
+     php5-mcrypt php5-mysql php5-gd php5-curl
+```
+
+after that
+
+``` vagrant up ```
+
+We need to create a root folder for this virtual host that wi will create
+
+``` mkdir -p /var/www/ow-fastcgi.com/public```
+
+Now create a virtualhost ow-fastcgi ne sites-available:
+
+```
+<VirtualHost *:80>
+    ServerName ow-fastcgi.com
+    ServerAlias www.ow-fastcgi.com
+
+
+    DocumentRoot /var/www/ow-fastcgi.com/public
+
+    <Directory /var/www/ow-fastcgi.com/public>
+        Options -Indexes +FollowSymLinks +MultiViews
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    <FilesMatch \.php$>
+        # 2.4.10+ can proxy to unix socket
+        # SetHandler "proxy:unix:/var/run/php5-fpm.sock|fcgi://localhost/"
+
+        # Else we can just use a tcp socket:
+        SetHandler "proxy:fcgi://127.0.0.1:9000"
+    </FilesMatch>
+
+    ErrorLog ${APACHE_LOG_DIR}/example.com-error.log
+
+    # Possible values include: debug, info, notice, warn, error, crit,
+    # alert, emerg.
+    LogLevel warn
+
+    CustomLog ${APACHE_LOG_DIR}/ow-fastcgi.com-access.log combined
+
+</VirtualHost>
+```
+
+
+* FCGI (mod_fcgid)
