@@ -221,4 +221,13 @@ Now create a virtualhost ow-fastcgi ne sites-available:
 ```
 
 
+
+
 * FCGI (mod_fcgid)
+
+# MySQL
+
+OjO:
+* ACID (MyISAM, engine by default is not transactional, better InnoDB or XtrailDB that support ACID)
+* COnfiguration --> my.cnf
+* Performance --> Partition in a Fyletype system that support journaling is better for recovering).
